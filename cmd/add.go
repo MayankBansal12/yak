@@ -1,33 +1,82 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
+
+type todo struct {
+	title string
+	desc string
+	priority int
+	dueDate string
+}
+
+var item todo
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "A brief description of your command",
+	Args: cobra.ExactArgs(1),
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("add called")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		item.title = strings.TrimSpace(args[0])
+		if item.title == "" {
+			return fmt.Errorf("Invalid argument for the command %s", args[0])
+		}
+
+		item.desc = strings.TrimSpace(item.desc)
+		if item.desc != "" {
+			fmt.Printf("Description Added\n");
+		}
+
+		if item.priority != -1 {
+			if item.priority < 0 || item.priority > 2 {
+			    return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", item.priority)
+			}
+			fmt.Printf("Priority Added\n");
+		}
+
+		itemDue := strings.TrimSpace(item.dueDate)
+		if itemDue != "" {
+			parsedDate, err := time.Parse("02-01-06", itemDue)
+			if err != nil {
+				parsedDate, err = time.Parse("02-01", itemDue)
+
+				if err != nil{
+					return fmt.Errorf("invalid due date %s: %w", itemDue, err)
+				}
+
+				 parsedDate = parsedDate.AddDate(time.Now().Year()-parsedDate.Year(), 0, 0)
+			}
+			fmt.Printf("Due Date Added\n")
+			item.dueDate = parsedDate.Format("02-01-2006")
+		}
+
+		// ToDo: save the todo in the local user data
+
+		fmt.Printf("Added a new ToDo item: %v\n", item)
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-
+	addCmd.Flags().StringVarP(&item.desc, "detail", "d", "", "description/details for the todo item")
+	addCmd.Flags().IntVarP(&item.priority, "priority", "p", -1, "priority for the todo item")
+	addCmd.Flags().StringVarP(&item.dueDate, "due", "t", "", "due date for the todo item")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
