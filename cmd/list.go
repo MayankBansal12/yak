@@ -52,7 +52,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().IntVarP(&commandArgs.lastN, "last-N", "l", -1, "List last n todos including completed ones")
+	listCmd.Flags().IntVarP(&commandArgs.lastN, "last-N", "n", -1, "List last n todos including completed ones")
 	listCmd.Flags().StringVarP(&commandArgs.date, "datetime", "t", "", "List all todos assigned to a specific date")
 	listCmd.Flags().BoolVarP(&commandArgs.isDetail, "detail", "d", false, "List todos in detailed format (title, description, priority, deadline, created at)")
 	// Here you will define your flags and configuration settings.
