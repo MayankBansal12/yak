@@ -22,11 +22,13 @@
 | Command | Description |
 |---|---|
 | `yak list` | List all pending todos |
-| `yak list -l <n>` | List last n todos including completed ones |
+| `yak list -n <n>` | List last n todos including completed ones |
 | `yak list -t <DD/MM>` | List all todos assigned to a specific date |
 | `yak list -d` | List todos in detailed format (title, description, priority, deadline, created at) |
 | `yak list #<ref>` | Show full details for a specific todo by ref number |
-| `yak today` | List all todos for today sorted by priority — shows empty message if none |
+| `yak today` | List 3 todos for today sorted by priority — shows empty message if none |
+| `yak today -a` | List all todos for today sorted by priority — shows empty message if none |
+| `yak today -n <n>` | List n todos for today sorted by priority — shows empty message if none |
 | `yak next` | Show 3 todos sorted by nearest deadline then priority — pulls from any date if today is clear |
 
 - note: `view` is an alias for list (eg: yak view - list all pending todos)
