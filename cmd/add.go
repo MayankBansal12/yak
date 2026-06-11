@@ -6,8 +6,8 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
+	"yak-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -49,21 +49,12 @@ to quickly create a Cobra application.`,
 			fmt.Printf("Priority Added\n");
 		}
 
-		itemDue := strings.TrimSpace(item.dueDate)
-		if itemDue != "" {
-			parsedDate, err := time.Parse("02-01-06", itemDue)
-			if err != nil {
-				parsedDate, err = time.Parse("02-01", itemDue)
-
-				if err != nil{
-					return fmt.Errorf("invalid due date %s: %w", itemDue, err)
-				}
-
-				 parsedDate = parsedDate.AddDate(time.Now().Year()-parsedDate.Year(), 0, 0)
-			}
-			fmt.Printf("Due Date Added\n")
-			item.dueDate = parsedDate.Format("02-01-2006")
+		itemDue, err := utils.FormatParsedDate(item.dueDate)
+		if err != nil {
+			return fmt.Errorf("%w", err)
 		}
+
+		item.dueDate = itemDue
 
 		// ToDo: save the todo in the local user data
 

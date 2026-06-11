@@ -1,4 +1,4 @@
-module github.com/MayankBansal12/yak-cli
+module yak-cli
 
 go 1.22.2
 
