@@ -5,8 +5,9 @@ package cmd
 
 import (
 	"fmt"
-	"yak-cli/utils"
+	"strings"
 
+	"yak-cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,7 @@ var commandArgs arguments
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
+	Aliases: []string{"view", "see", "get", "find"},
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -28,7 +30,17 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
+			if idArg == "" {
+				return fmt.Errorf("todo id is required for list command")
+			}
+			fmt.Println("list todo item with id:", idArg)
+			return nil
+		}
+
 		if commandArgs.lastN > 0 {
 			fmt.Printf("listing last %d todos\n", commandArgs.lastN)
 		} else if commandArgs.date != "" {
