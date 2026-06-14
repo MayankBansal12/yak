@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	"yak-cli/internal/model"
 )
@@ -68,6 +69,25 @@ func LoadTodo() ([]model.Todo, error) {
 		return []model.Todo{}, nil
 	}
 	return store.todos, nil
+}
+
+func AddTodo(todoItem model.Todo) error {
+	todos, err := LoadTodo()
+	if err != nil {
+		return err
+	}
+
+	nextItemId := 0
+	for _, todo := range todos {
+		if todo.ID >= nextItemId {
+			nextItemId = todo.ID + 1
+		}
+	}
+
+	todoItem.ID = nextItemId
+	todoItem.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+	todos = append(todos, todoItem)
+	return SaveTodo(todos)
 }
 
 func SaveTodo(todos []model.Todo) error {
