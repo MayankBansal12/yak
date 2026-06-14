@@ -19,24 +19,31 @@ type todoStore struct {
 	todos []model.Todo
 }
 
-func LocalTodoFilePath() (string, error) {
-	userDir := os.Getenv(dataDirEnv)
-	if userDir == "" {
-		baseDir, err := os.UserConfigDir()
-		if err != nil {
-			return "", err
-		}
-		userDir = filepath.Join(baseDir, "yak", filename)
+func GetStorageFilePath() (string, error) {
+	var userDir string
+
+	if v := os.Getenv(dataDirEnv); v != "" {
+		userDir = v
+	} else if v := os.Getenv("XDG_DATA_HOME"); v != "" {
+		userDir = v
+	} else {
+		homeDir, err := os.UserHomeDir()
+        if err != nil {
+            return "", err
+        }
+        userDir = filepath.Join(homeDir, ".local", "share", "yak")
 	}
-	err := os.MkdirAll(userDir, 0o755)
-	if(err != nil){
+
+	// ensure dir exists before joining filename
+	if err := os.MkdirAll(userDir, 0o755); err != nil {
 		return "", err
 	}
-	return userDir, nil
+
+	return filepath.Join(userDir, filename), nil
 }
 
 func LoadTodo() ([]model.Todo, error) {
-	todoFilePath, err := LocalTodoFilePath()
+	todoFilePath, err := GetStorageFilePath()
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +61,7 @@ func LoadTodo() ([]model.Todo, error) {
 	if err != nil {
 		backupPath := todoFilePath + ".bak"
 		if err := os.Rename(todoFilePath, backupPath); err != nil {
-		    fmt.Fprintln(os.Stderr, "Warning: unable to create backup for corrupt todos.json...Starting with empty list.")
+		    fmt.Fprintln(os.Stderr, "Warning: unable to create backup for corrupt todos.json. Starting with empty list.")
 		} else {
 		    fmt.Fprintf(os.Stderr, "Warning: corrupt todos.json moved to %s. Starting with empty list.\n", backupPath)
 		}
@@ -65,12 +72,13 @@ func LoadTodo() ([]model.Todo, error) {
 
 func SaveTodo(todos []model.Todo) error {
 	store := todoStore{version: 1, todos: todos}
+
 	storeJson, err := json.Marshal(store)
 	if err != nil {
 		return err
 	}
 
-	todoFilePath, err := LocalTodoFilePath()
+	todoFilePath, err := GetStorageFilePath()
 	if err != nil {
 		return err
 	}
