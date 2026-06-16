@@ -5,130 +5,203 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 
+	"yak-cli/internal/model"
+	"yak-cli/internal/storage"
 	"yak-cli/utils"
+
 	"github.com/spf13/cobra"
 )
 
-type todo struct {
-	title string
-	desc string
-	priority int
-	dueDate string
+type addFlags struct {
+	desc        string
+	priority    int
+	dueDate     string
+	interactive bool
 }
 
-var interactive bool
-var item todo
+var cmdFlags addFlags
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
-	Args: cobra.RangeArgs(0, 1),
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "add [title]",
+	Short: "Add a new todo item",
+	Args:  cobra.RangeArgs(0, 1),
+	Long: `Add a new todo to your list.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The title can be passed as the first argument, or entered when prompted.
+Optional fields — description, priority, and due date — can be supplied
+as flags.
+Add todo interactively with -i or --interactive
+
+Examples:
+  yak add "Buy milk"
+  yak add "Pay rent" -p 1 -d "Include utilities" -t 25-03
+  yak add -i (interactive mode)`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var item model.Todo
+
+		title := ""
 		hasTitle := len(args) > 0
-		if hasTitle && strings.TrimSpace(args[0]) != "" {
-			item.title = strings.TrimSpace(args[0])
-		} else {
-			interactionModeForAdd()
-			return nil
+		if hasTitle {
+			title = strings.TrimSpace(args[0])
 		}
 
-		if interactive {
-			interactionModeForAdd()
-			return nil
-		}
+		item.Title = title
 
-		item.desc = strings.TrimSpace(item.desc)
-		if item.desc != "" {
-			fmt.Printf("Description Added\n");
-		}
-
-		if item.priority != -1 {
-			if item.priority < 0 || item.priority > 2 {
-			    return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", item.priority)
-			}
-			fmt.Printf("Priority Added\n");
-		}
-
-		if(item.dueDate != ""){
-			itemDue, err := utils.FormatParsedDate(item.dueDate)
+		if title == "" || cmdFlags.interactive {
+			err := interactionModeForAdd(cmd, &item)
 			if err != nil {
-				return fmt.Errorf("%w", err)
+				return err
 			}
-			item.dueDate = itemDue
+			return nil
 		}
 
-		// ToDo: save the todo in the local user data
+		item.Desc = strings.TrimSpace(cmdFlags.desc)
 
-		fmt.Printf("Added a new ToDo item: %v\n", item)
+		err := getPriority(cmd, &item)
+		if err != nil {
+			return err
+		}
+
+		err = getDueDate(cmd, &item)
+		if err != nil {
+			return err
+		}
+
+		err = storage.AddTodo(item)
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 }
 
-func interactionModeForAdd() {
-	if item.title == "" {
-		userInput := utils.GetUserInput("Title for the todo: ")
-		if userInput == "" {
-			// should have retry instead of throwing error
-			fmt.Println("ERROR: Title for the ToDo can't be empty");
-			return;
+func interactionModeForAdd(cmd *cobra.Command, item *model.Todo) error {
+	isTitleEmpty := item.Title == ""
+	if isTitleEmpty {
+		userInput, err := utils.PromptUntilInput("Title for the todo: ", "Title for the ToDo can't be empty")
+		if err != nil {
+			return err
 		}
-		item.title = userInput
+		item.Title = userInput
 	}
 
-	if item.desc == "" {
-		userInput := utils.GetUserInput("Any Description/Details for the todo (optional): ")
-		item.desc = userInput
-	}
-
-	if item.priority == -1 {
-		userInput := utils.GetUserInput("Want to add priority for the todo? By default it's none: ")
-		priority, err := strconv.Atoi(userInput)
-
-		if userInput != "" && (err != nil || priority < 0 || priority > 2) {
-			fmt.Println("ERROR: Invalid priority, please select priority b/w 0 and 2 (2 being lowest)")
-			return;
-		}
-		item.priority = priority
-	}
-
-	if item.dueDate == "" {
-		userInput := utils.GetUserInput("Deadline for todo item (optional): ")
-		if userInput != "" {
-			dueDate, err := utils.FormatParsedDate(userInput)
-			if err != nil {
-				fmt.Printf("ERROR: Invalid due date format: %s, please use DD-MM or DD-MM-YY\n", userInput)
-				return;
-			}
-			item.dueDate = dueDate
+	userDesc := cmdFlags.desc
+	var err error
+	if !cmd.Flags().Changed("detail") {
+		userDesc, err = utils.GetUserInput("Any Description/Details for the todo (optional): ")
+		if err != nil {
+			return err
 		}
 	}
+	item.Desc = strings.TrimSpace(userDesc)
 
-	fmt.Printf("Interactive mode for adding todo item: %v\n", item)
+	err = getPriority(cmd, item)
+	if err != nil {
+		return err
+	}
+
+	err = getDueDate(cmd, item)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getDueDate(cmd *cobra.Command, item *model.Todo) error {
+	dueDate := cmdFlags.dueDate
+	var err error
+
+	if !cmd.Flags().Changed("due") {
+		dueDate, err = utils.GetUserInput("Deadline for todo item (optional): ")
+		if err != nil {
+			return err
+		}
+		if dueDate == "" {
+			fmt.Println("Skipping Due Date...")
+			return nil
+		}
+	}
+
+	for {
+		formattedDate, err := validateAndParseDueDate(dueDate)
+		if err == nil {
+			item.DueDate = formattedDate
+			return nil
+		}
+
+		fmt.Println("Warning: " + err.Error())
+		dueDate, err = utils.GetUserInput("Deadline for todo item (optional): ")
+		if err != nil {
+			return err
+		}
+		if dueDate == "" {
+			fmt.Println("Skipping Due Date...")
+			return nil
+		}
+	}
+}
+
+func validateAndParseDueDate(dueDate string) (string, error) {
+	itemDue, err := utils.FormatParsedDate(dueDate)
+	if err != nil {
+		return "", err
+	}
+	return itemDue, nil
+}
+
+func getPriority(cmd *cobra.Command, item *model.Todo) error {
+	itemPriority := strconv.Itoa(cmdFlags.priority)
+	var err error
+
+	if !cmd.Flags().Changed("priority") {
+		itemPriority, err = utils.GetUserInput("Add priority for the todo (0-2)...by default it's none: ")
+		if err != nil {
+			return err
+		}
+		if itemPriority == "" {
+			fmt.Println("Skipping Priority...")
+			return nil
+		}
+	}
+
+	for {
+		parsed, err := validatePriority(itemPriority)
+		if err == nil {
+			item.Priority = &parsed
+			return nil
+		}
+
+		fmt.Println("Warning: " + err.Error())
+		itemPriority, err = utils.GetUserInput("Priority for item (0-2, or Enter to skip): ")
+		if err != nil {
+			return err
+		}
+		if itemPriority == "" {
+			fmt.Println("Skipping Priority...")
+			return nil
+		}
+	}
+}
+
+func validatePriority(priority string) (int, error) {
+	parsedPriority, err := strconv.Atoi(priority)
+	if err != nil {
+		return 0, fmt.Errorf("Invalid priority: %w", err)
+	}
+	if parsedPriority < 0 || parsedPriority > 2 {
+		return 0, fmt.Errorf("Invalid priority, please select priority b/w 0 and 2 (2 being lowest)")
+	}
+	return parsedPriority, nil
 }
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().BoolVarP(&interactive, "interactive", "i", false, "Add todo details in interactive mode")
-	addCmd.Flags().StringVarP(&item.desc, "detail", "d", "", "description/details for the todo item")
-	addCmd.Flags().IntVarP(&item.priority, "priority", "p", -1, "priority for the todo item")
-	addCmd.Flags().StringVarP(&item.dueDate, "due", "t", "", "due date for the todo item")
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	addCmd.Flags().BoolVarP(&cmdFlags.interactive, "interactive", "i", false, "Add todo details in interactive mode")
+	addCmd.Flags().StringVarP(&cmdFlags.desc, "detail", "d", "", "description/details for the todo item")
+	addCmd.Flags().IntVarP(&cmdFlags.priority, "priority", "p", 0, "priority for the todo item")
+	addCmd.Flags().StringVarP(&cmdFlags.dueDate, "due", "t", "", "due date for the todo item")
 }
