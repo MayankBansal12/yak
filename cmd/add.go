@@ -26,15 +26,20 @@ var cmdFlags addFlags
 
 // addCmd represents the add command
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "A brief description of your command",
+	Use:   "add [title]",
+	Short: "Add a new todo item",
 	Args:  cobra.RangeArgs(0, 1),
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `Add a new todo to your list.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+The title can be passed as the first argument, or entered when prompted.
+Optional fields — description, priority, and due date — can be supplied
+as flags.
+Add todo interactively with -i or --interactive
+
+Examples:
+  yak add "Buy milk"
+  yak add "Pay rent" -p 1 -d "Include utilities" -t 25-03
+  yak add -i (interactive mode)`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var item model.Todo
 
@@ -164,21 +169,21 @@ func getPriority(cmd *cobra.Command, item *model.Todo) error {
 	}
 
 	for {
-	    parsed, err := validatePriority(itemPriority)
-	    if err == nil {
-	        item.Priority = &parsed
-	        return nil
-	    }
+		parsed, err := validatePriority(itemPriority)
+		if err == nil {
+			item.Priority = &parsed
+			return nil
+		}
 
 		fmt.Println("Warning: " + err.Error())
-	    itemPriority, err = utils.GetUserInput("Priority for item (0-2, or Enter to skip): ")
+		itemPriority, err = utils.GetUserInput("Priority for item (0-2, or Enter to skip): ")
 		if err != nil {
 			return err
 		}
-	    if itemPriority == "" {
+		if itemPriority == "" {
 			fmt.Println("Skipping Priority...")
-	        return nil
-	    }
+			return nil
+		}
 	}
 }
 
