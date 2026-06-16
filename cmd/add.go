@@ -38,16 +38,19 @@ to quickly create a Cobra application.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var item model.Todo
 
+		title := ""
 		hasTitle := len(args) > 0
-		if hasTitle && strings.TrimSpace(args[0]) != "" {
-			item.Title = strings.TrimSpace(args[0])
-		} else {
-			interactionModeForAdd(cmd, &item)
-			return nil
+		if hasTitle {
+			title = strings.TrimSpace(args[0])
 		}
 
-		if cmdFlags.interactive {
-			interactionModeForAdd(cmd, &item)
+		item.Title = title
+
+		if title == "" || cmdFlags.interactive {
+			err := interactionModeForAdd(cmd, &item)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 
@@ -63,7 +66,10 @@ to quickly create a Cobra application.`,
 			return err
 		}
 
-		storage.AddTodo(item)
+		err = storage.AddTodo(item)
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 }
@@ -71,22 +77,24 @@ to quickly create a Cobra application.`,
 func interactionModeForAdd(cmd *cobra.Command, item *model.Todo) error {
 	isTitleEmpty := item.Title == ""
 	if isTitleEmpty {
-		userInput := strings.TrimSpace(utils.GetUserInput("Title for the todo: "))
-
-		// todo: should have retry instead of throwing error
-		if userInput == "" {
-			return fmt.Errorf("ERROR: Title for the ToDo can't be empty")
+		userInput, err := utils.PromptUntilInput("Title for the todo: ", "Title for the ToDo can't be empty")
+		if err != nil {
+			return err
 		}
 		item.Title = userInput
 	}
 
 	userDesc := cmdFlags.desc
+	var err error
 	if !cmd.Flags().Changed("detail") {
-		userDesc = utils.GetUserInput("Any Description/Details for the todo (optional): ")
+		userDesc, err = utils.GetUserInput("Any Description/Details for the todo (optional): ")
+		if err != nil {
+			return err
+		}
 	}
 	item.Desc = strings.TrimSpace(userDesc)
 
-	err := getPriority(cmd, item)
+	err = getPriority(cmd, item)
 	if err != nil {
 		return err
 	}
@@ -100,59 +108,89 @@ func interactionModeForAdd(cmd *cobra.Command, item *model.Todo) error {
 
 func getDueDate(cmd *cobra.Command, item *model.Todo) error {
 	dueDate := cmdFlags.dueDate
-	if !cmd.Flags().Changed("due") {
-		dueDate = utils.GetUserInput("Deadline for todo item (optional): ")
-	}
+	var err error
 
-	trimmedDueDate := strings.TrimSpace(dueDate)
-	if trimmedDueDate != "" {
-		formattedDate, err := validateAndParseDueDate(trimmedDueDate)
+	if !cmd.Flags().Changed("due") {
+		dueDate, err = utils.GetUserInput("Deadline for todo item (optional): ")
 		if err != nil {
 			return err
 		}
-		item.DueDate = formattedDate
+		if dueDate == "" {
+			fmt.Println("Skipping Due Date...")
+			return nil
+		}
 	}
-	return nil
+
+	for {
+		formattedDate, err := validateAndParseDueDate(dueDate)
+		if err == nil {
+			item.DueDate = formattedDate
+			return nil
+		}
+
+		fmt.Println("Warning: " + err.Error())
+		dueDate, err = utils.GetUserInput("Deadline for todo item (optional): ")
+		if err != nil {
+			return err
+		}
+		if dueDate == "" {
+			fmt.Println("Skipping Due Date...")
+			return nil
+		}
+	}
 }
 
 func validateAndParseDueDate(dueDate string) (string, error) {
 	itemDue, err := utils.FormatParsedDate(dueDate)
 	if err != nil {
-		// todo: reprompt if invalid date instead of error
-		return "", fmt.Errorf("ERROR: Invalid Date Format: %w", err)
+		return "", err
 	}
 	return itemDue, nil
 }
 
 func getPriority(cmd *cobra.Command, item *model.Todo) error {
-	itemPriority := cmdFlags.priority
+	itemPriority := strconv.Itoa(cmdFlags.priority)
+	var err error
+
 	if !cmd.Flags().Changed("priority") {
-		inputPriority := strings.TrimSpace(utils.GetUserInput("Want to add priority for the todo? By default it's none: "))
-		if inputPriority == "" {
+		itemPriority, err = utils.GetUserInput("Add priority for the todo (0-2)...by default it's none: ")
+		if err != nil {
+			return err
+		}
+		if itemPriority == "" {
+			fmt.Println("Skipping Priority...")
 			return nil
 		}
-		parsedPriority, err := strconv.Atoi(inputPriority)
+	}
+
+	for {
+	    parsed, err := validatePriority(itemPriority)
+	    if err == nil {
+	        item.Priority = &parsed
+	        return nil
+	    }
+
+		fmt.Println("Warning: " + err.Error())
+	    itemPriority, err = utils.GetUserInput("Priority for item (0-2, or Enter to skip): ")
 		if err != nil {
-			return fmt.Errorf("ERROR: Invalid priority: %w", err)
+			return err
 		}
-		itemPriority = parsedPriority
+	    if itemPriority == "" {
+			fmt.Println("Skipping Priority...")
+	        return nil
+	    }
 	}
-
-	err := validatePriority(itemPriority)
-	if err != nil {
-		return err
-	}
-
-	item.Priority = &itemPriority
-	return nil
 }
 
-func validatePriority(priority int) error {
-	if priority < 0 || priority > 2 {
-		// todo: reprompt user instead of throwing error
-		return fmt.Errorf("ERROR: Invalid priority, please select priority b/w 0 and 2 (2 being lowest)")
+func validatePriority(priority string) (int, error) {
+	parsedPriority, err := strconv.Atoi(priority)
+	if err != nil {
+		return 0, fmt.Errorf("Invalid priority: %w", err)
 	}
-	return nil
+	if parsedPriority < 0 || parsedPriority > 2 {
+		return 0, fmt.Errorf("Invalid priority, please select priority b/w 0 and 2 (2 being lowest)")
+	}
+	return parsedPriority, nil
 }
 
 func init() {

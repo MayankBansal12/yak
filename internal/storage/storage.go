@@ -85,7 +85,10 @@ func AddTodo(todoItem model.Todo) error {
 	}
 
 	todoItem.ID = nextItemId
-	todoItem.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+	currentTime := time.Now().UTC().Format(time.RFC3339)
+	todoItem.CreatedAt = currentTime
+	todoItem.UpdatedAt = currentTime
+
 	todos = append(todos, todoItem)
 	return SaveTodo(todos)
 }

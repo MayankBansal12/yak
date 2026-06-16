@@ -22,7 +22,7 @@ func FormatParsedDate(dateInput string) (string, error) {
 
 			parsedDate = parsedDate.AddDate(time.Now().Year()-parsedDate.Year(), 0, 0)
 		}
-		return parsedDate.Format(goReferenceTime), nil
+		return parsedDate.Format(time.RFC3339), nil
 	}
 	return "", fmt.Errorf("Invalid or empty date input, please follow DD-MM format")
 }
