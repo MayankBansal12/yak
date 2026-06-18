@@ -1,4 +1,3 @@
-
 package utils
 
 import (
@@ -16,7 +15,7 @@ func FormatParsedDate(dateInput string) (string, error) {
 		if err != nil {
 			parsedDate, err = time.Parse("02-01", dateInput)
 
-			if err != nil{
+			if err != nil {
 				return "", fmt.Errorf("invalid date format %s", dateInput)
 			}
 

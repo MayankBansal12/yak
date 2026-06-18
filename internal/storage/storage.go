@@ -17,7 +17,7 @@ const dataDirEnv = "YAK_DATA_DIR"
 
 type todoStore struct {
 	Version int
-	Todos []model.Todo
+	Todos   []model.Todo
 }
 
 func GetStorageFilePath() (string, error) {
@@ -29,10 +29,10 @@ func GetStorageFilePath() (string, error) {
 		userDir = v
 	} else {
 		homeDir, err := os.UserHomeDir()
-        if err != nil {
-            return "", err
-        }
-        userDir = filepath.Join(homeDir, ".local", "share", "yak")
+		if err != nil {
+			return "", err
+		}
+		userDir = filepath.Join(homeDir, ".local", "share", "yak")
 	}
 
 	// ensure dir exists before joining filename
@@ -62,9 +62,9 @@ func GetTodos() ([]model.Todo, error) {
 	if err != nil {
 		backupPath := todoFilePath + ".bak"
 		if err := os.Rename(todoFilePath, backupPath); err != nil {
-		    fmt.Fprintln(os.Stderr, "Warning: unable to create backup for corrupt todos.json. Starting with empty list.")
+			fmt.Fprintln(os.Stderr, "Warning: unable to create backup for corrupt todos.json. Starting with empty list.")
 		} else {
-		    fmt.Fprintf(os.Stderr, "Warning: corrupt todos.json moved to %s. Starting with empty list.\n", backupPath)
+			fmt.Fprintf(os.Stderr, "Warning: corrupt todos.json moved to %s. Starting with empty list.\n", backupPath)
 		}
 		return []model.Todo{}, nil
 	}

@@ -27,7 +27,7 @@ func PrintTodos(todos []model.Todo, detailed bool) {
 }
 
 func printCard(t model.Todo, width int, detailed bool) {
-	top :=    "┌" + strings.Repeat("─", width) + "┐"
+	top := "┌" + strings.Repeat("─", width) + "┐"
 	bottom := "└" + strings.Repeat("─", width) + "┘"
 
 	fmt.Println(top)
