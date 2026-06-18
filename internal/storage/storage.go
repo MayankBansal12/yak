@@ -16,8 +16,8 @@ const filename = "todos.json"
 const dataDirEnv = "YAK_DATA_DIR"
 
 type todoStore struct {
-	version int
-	todos []model.Todo
+	Version int
+	Todos []model.Todo
 }
 
 func GetStorageFilePath() (string, error) {
@@ -68,7 +68,7 @@ func LoadTodo() ([]model.Todo, error) {
 		}
 		return []model.Todo{}, nil
 	}
-	return store.todos, nil
+	return store.Todos, nil
 }
 
 func AddTodo(todoItem model.Todo) error {
@@ -94,7 +94,7 @@ func AddTodo(todoItem model.Todo) error {
 }
 
 func SaveTodo(todos []model.Todo) error {
-	store := todoStore{version: 1, todos: todos}
+	store := todoStore{Version: 1, Todos: todos}
 
 	storeJson, err := json.Marshal(store)
 	if err != nil {
