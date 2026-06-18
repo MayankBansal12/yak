@@ -5,19 +5,25 @@ package cmd
 
 import (
 	"fmt"
+	"slices"
+	"strconv"
 	"strings"
 
+	"yak-cli/internal/display"
+	"yak-cli/internal/model"
+	"yak-cli/internal/storage"
 	"yak-cli/utils"
+
 	"github.com/spf13/cobra"
 )
 
-type arguments struct {
+type listArgs struct {
 	lastN int
-	date string
-	isDetail bool
+	due string
+	showDetail bool
 }
 
-var commandArgs arguments
+var commandArgs listArgs
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -32,48 +38,61 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		storedTodos, err := storage.GetTodos()
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
 		if len(args) > 0 {
 			idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
-			if idArg == "" {
+			id, err := strconv.Atoi(idArg)
+			if err != nil {
 				return fmt.Errorf("todo id is required for list command")
 			}
-			fmt.Println("list todo item with id:", idArg)
-			return nil
+			commandArgs.showDetail = true
+			storedTodos = getTodoById(storedTodos, id)
+		} else {
+			slices.SortFunc(storedTodos, func(a, b model.Todo) int {
+				return strings.Compare(b.UpdatedAt, a.UpdatedAt)
+			})
 		}
 
 		if commandArgs.lastN > 0 {
-			fmt.Printf("listing last %d todos\n", commandArgs.lastN)
-		} else if commandArgs.date != "" {
-			parsedDate, err := utils.FormatParsedDate(commandArgs.date)
+			limit := min(commandArgs.lastN, len(storedTodos))
+			storedTodos = storedTodos[:limit]
+		} else if commandArgs.due != "" {
+			dueDate, err := utils.FormatParsedDate(commandArgs.due)
 			if err != nil {
 				return fmt.Errorf("%w", err)
 			}
-			fmt.Printf("listing todos assigned to %v\n", parsedDate)
+
+			dueTodos := []model.Todo{}
+			for _, todo := range storedTodos {
+				if todo.DueDate == dueDate {
+					dueTodos = append(dueTodos, todo)
+				}
+			}
+			storedTodos = dueTodos
 		}
 
-		// fetch the todos stored in local store and present them to user
-		if commandArgs.isDetail {
-			fmt.Println("here's the todo in detailed format")
-		}else {
-			fmt.Println("here's the list of all the todos")
-		}
-
+		display.PrintTodos(storedTodos, commandArgs.showDetail)
 		return nil
 	},
+}
+
+func getTodoById (todos []model.Todo, id int) []model.Todo {
+	for _, todo := range todos {
+		if todo.ID == id {
+			return []model.Todo{todo}
+		}
+	}
+	fmt.Printf("todo with id %v not found\n", id)
+	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.Flags().IntVarP(&commandArgs.lastN, "last-N", "n", -1, "List last n todos including completed ones")
-	listCmd.Flags().StringVarP(&commandArgs.date, "datetime", "t", "", "List all todos assigned to a specific date")
-	listCmd.Flags().BoolVarP(&commandArgs.isDetail, "detail", "d", false, "List todos in detailed format (title, description, priority, deadline, created at)")
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.Flags().StringVarP(&commandArgs.due, "datetime", "t", "", "List all todos assigned to a specific date")
+	listCmd.Flags().BoolVarP(&commandArgs.showDetail, "detail", "d", false, "List todos in detailed format (title, description, priority, deadline, created at)")
 }

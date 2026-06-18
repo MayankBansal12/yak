@@ -16,8 +16,8 @@ const filename = "todos.json"
 const dataDirEnv = "YAK_DATA_DIR"
 
 type todoStore struct {
-	version int
-	todos []model.Todo
+	Version int
+	Todos []model.Todo
 }
 
 func GetStorageFilePath() (string, error) {
@@ -43,7 +43,7 @@ func GetStorageFilePath() (string, error) {
 	return filepath.Join(userDir, filename), nil
 }
 
-func LoadTodo() ([]model.Todo, error) {
+func GetTodos() ([]model.Todo, error) {
 	todoFilePath, err := GetStorageFilePath()
 	if err != nil {
 		return nil, err
@@ -68,11 +68,11 @@ func LoadTodo() ([]model.Todo, error) {
 		}
 		return []model.Todo{}, nil
 	}
-	return store.todos, nil
+	return store.Todos, nil
 }
 
 func AddTodo(todoItem model.Todo) error {
-	todos, err := LoadTodo()
+	todos, err := GetTodos()
 	if err != nil {
 		return err
 	}
@@ -90,11 +90,11 @@ func AddTodo(todoItem model.Todo) error {
 	todoItem.UpdatedAt = currentTime
 
 	todos = append(todos, todoItem)
-	return SaveTodo(todos)
+	return SaveTodoToLocalStorage(todos)
 }
 
-func SaveTodo(todos []model.Todo) error {
-	store := todoStore{version: 1, todos: todos}
+func SaveTodoToLocalStorage(todos []model.Todo) error {
+	store := todoStore{Version: 1, Todos: todos}
 
 	storeJson, err := json.Marshal(store)
 	if err != nil {
@@ -119,4 +119,38 @@ func SaveTodo(todos []model.Todo) error {
 	}
 
 	return nil
+}
+
+func MarkTodo(id int) error {
+	todos, err := GetTodos()
+	if err != nil {
+		return err
+	}
+
+	for idx, todo := range todos {
+		if todo.ID == id {
+			currentTime := time.Now().UTC().Format(time.RFC3339)
+			todos[idx].CompletedAt = currentTime
+			todos[idx].UpdatedAt = currentTime
+			return SaveTodoToLocalStorage(todos)
+		}
+	}
+
+	return fmt.Errorf("Todo with id: %v not found\n", id)
+}
+
+func DeleteTodo(id int) error {
+	todos, err := GetTodos()
+	if err != nil {
+		return err
+	}
+
+	for idx, todo := range todos {
+		if todo.ID == id {
+			todos = append(todos[:idx], todos[idx+1:]...)
+			return SaveTodoToLocalStorage(todos)
+		}
+	}
+
+	return fmt.Errorf("Todo with id: %v not found\n", id)
 }

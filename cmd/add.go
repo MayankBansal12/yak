@@ -56,22 +56,32 @@ Examples:
 			if err != nil {
 				return err
 			}
+			err = storage.AddTodo(item)
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 
-		item.Desc = strings.TrimSpace(cmdFlags.desc)
-
-		err := getPriority(cmd, &item)
-		if err != nil {
-			return err
+		if cmd.Flags().Changed("detail") {
+			item.Desc = strings.TrimSpace(cmdFlags.desc)
 		}
 
-		err = getDueDate(cmd, &item)
-		if err != nil {
-			return err
+		if cmd.Flags().Changed("priority") {
+			err := getPriority(cmd, &item)
+			if err != nil {
+				return err
+			}
 		}
 
-		err = storage.AddTodo(item)
+		if cmd.Flags().Changed("due") {
+			err := getDueDate(cmd, &item)
+			if err != nil {
+				return err
+			}
+		}
+
+		err := storage.AddTodo(item)
 		if err != nil {
 			return err
 		}
@@ -127,7 +137,7 @@ func getDueDate(cmd *cobra.Command, item *model.Todo) error {
 	}
 
 	for {
-		formattedDate, err := validateAndParseDueDate(dueDate)
+		formattedDate, err := utils.FormatParsedDate(dueDate)
 		if err == nil {
 			item.DueDate = formattedDate
 			return nil
@@ -145,14 +155,6 @@ func getDueDate(cmd *cobra.Command, item *model.Todo) error {
 	}
 }
 
-func validateAndParseDueDate(dueDate string) (string, error) {
-	itemDue, err := utils.FormatParsedDate(dueDate)
-	if err != nil {
-		return "", err
-	}
-	return itemDue, nil
-}
-
 func getPriority(cmd *cobra.Command, item *model.Todo) error {
 	itemPriority := strconv.Itoa(cmdFlags.priority)
 	var err error
@@ -166,6 +168,9 @@ func getPriority(cmd *cobra.Command, item *model.Todo) error {
 			fmt.Println("Skipping Priority...")
 			return nil
 		}
+	} else if cmdFlags.priority == -1 {
+		item.Priority = nil
+		return nil
 	}
 
 	for {
@@ -202,6 +207,6 @@ func init() {
 	rootCmd.AddCommand(addCmd)
 	addCmd.Flags().BoolVarP(&cmdFlags.interactive, "interactive", "i", false, "Add todo details in interactive mode")
 	addCmd.Flags().StringVarP(&cmdFlags.desc, "detail", "d", "", "description/details for the todo item")
-	addCmd.Flags().IntVarP(&cmdFlags.priority, "priority", "p", 0, "priority for the todo item")
+	addCmd.Flags().IntVarP(&cmdFlags.priority, "priority", "p", -1, "priority for the todo item")
 	addCmd.Flags().StringVarP(&cmdFlags.dueDate, "due", "t", "", "due date for the todo item")
 }

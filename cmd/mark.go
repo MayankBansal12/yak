@@ -1,12 +1,13 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"yak-cli/internal/storage"
 
 	"github.com/spf13/cobra"
 )
@@ -25,25 +26,21 @@ to quickly create a Cobra application.`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
-		if idArg == "" {
+		id, err := strconv.Atoi(idArg)
+		if err != nil {
 			return fmt.Errorf("todo id is required for mark command")
 		}
 
-		fmt.Println("mark called with id:", idArg)
+		err = storage.MarkTodo(id)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Todo with id: %v marked as completed\n", id)
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(markCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// markCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// markCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
