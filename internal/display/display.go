@@ -52,8 +52,8 @@ func printCard(t model.Todo, width int, detailed bool) {
 		printRow(fmt.Sprintf("Updated: %s", formatDate(t.UpdatedAt)), width)
 	}
 
-	if t.CompletedAt != nil {
-		printRow(fmt.Sprintf("Status: Done (%s)", formatDate(*t.CompletedAt)), width)
+	if t.CompletedAt != "" {
+		printRow(fmt.Sprintf("Status: Done (%s)", formatDate(t.CompletedAt)), width)
 	} else {
 		printRow("Status: Pending", width)
 	}

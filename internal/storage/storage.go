@@ -120,3 +120,21 @@ func SaveTodoToLocalStorage(todos []model.Todo) error {
 
 	return nil
 }
+
+func MarkTodo(id int) error {
+	todos, err := GetTodos()
+	if err != nil {
+		return err
+	}
+
+	for idx, todo := range todos {
+		if todo.ID == id {
+			currentTime := time.Now().UTC().Format(time.RFC3339)
+			todos[idx].CompletedAt = currentTime
+			todos[idx].UpdatedAt = currentTime
+			return SaveTodoToLocalStorage(todos)
+		}
+	}
+
+	return fmt.Errorf("Todo with id: %v not found\n", id)
+}
