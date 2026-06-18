@@ -43,7 +43,7 @@ func GetStorageFilePath() (string, error) {
 	return filepath.Join(userDir, filename), nil
 }
 
-func LoadTodo() ([]model.Todo, error) {
+func GetTodos() ([]model.Todo, error) {
 	todoFilePath, err := GetStorageFilePath()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func LoadTodo() ([]model.Todo, error) {
 }
 
 func AddTodo(todoItem model.Todo) error {
-	todos, err := LoadTodo()
+	todos, err := GetTodos()
 	if err != nil {
 		return err
 	}
@@ -90,10 +90,10 @@ func AddTodo(todoItem model.Todo) error {
 	todoItem.UpdatedAt = currentTime
 
 	todos = append(todos, todoItem)
-	return SaveTodo(todos)
+	return SaveTodoToLocalStorage(todos)
 }
 
-func SaveTodo(todos []model.Todo) error {
+func SaveTodoToLocalStorage(todos []model.Todo) error {
 	store := todoStore{Version: 1, Todos: todos}
 
 	storeJson, err := json.Marshal(store)
