@@ -138,3 +138,19 @@ func MarkTodo(id int) error {
 
 	return fmt.Errorf("Todo with id: %v not found\n", id)
 }
+
+func DeleteTodo(id int) error {
+	todos, err := GetTodos()
+	if err != nil {
+		return err
+	}
+
+	for idx, todo := range todos {
+		if todo.ID == id {
+			todos = append(todos[:idx], todos[idx+1:]...)
+			return SaveTodoToLocalStorage(todos)
+		}
+	}
+
+	return fmt.Errorf("Todo with id: %v not found\n", id)
+}
