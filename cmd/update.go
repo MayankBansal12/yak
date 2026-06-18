@@ -1,6 +1,5 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -15,25 +14,27 @@ import (
 )
 
 type updateFlags struct {
-    id       int
-    desc     string
-    priority int
-    dueDate  string
+	id       int
+	desc     string
+	priority int
+	dueDate  string
 }
 
 var updateArgs updateFlags
 
 // updateCmd represents the update command
 var updateCmd = &cobra.Command{
-	Use:   "update [todo-id]",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "update [todo-id] [title]",
+	Short: "Update an existing todo item",
+	Long: `Update an existing todo item by its ID.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.RangeArgs(1,2),
+A new title can be passed as the second argument. Optional fields — description,
+priority, and due date — can be supplied as flags.
+
+Examples:
+  yak update 3 "New title"
+  yak update 3 -p 1 -d "Updated description" -t 25-03`,
+	Args: cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var item model.Todo
 
@@ -44,7 +45,7 @@ to quickly create a Cobra application.`,
 
 		hasTitle := len(args) > 1
 		if !hasTitle && cmd.Flags().NFlag() == 0 {
-		    return fmt.Errorf("either a title or at least one flag is required")
+			return fmt.Errorf("either a title or at least one flag is required")
 		}
 		if hasTitle && strings.TrimSpace(args[1]) != "" {
 			item.Title = strings.TrimSpace(args[1])
@@ -56,7 +57,7 @@ to quickly create a Cobra application.`,
 
 		if updateArgs.priority != -1 {
 			if updateArgs.priority < 0 || updateArgs.priority > 2 {
-			    return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", updateArgs.priority)
+				return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", updateArgs.priority)
 			}
 			item.Priority = &updateArgs.priority
 		}

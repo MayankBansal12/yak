@@ -18,8 +18,8 @@ import (
 )
 
 type listArgs struct {
-	lastN int
-	due string
+	lastN      int
+	due        string
 	showDetail bool
 }
 
@@ -27,15 +27,19 @@ var commandArgs listArgs
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:     "list [todo-id]",
 	Aliases: []string{"view", "see", "get", "find"},
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short:   "List todo items",
+	Long: `List all todo items, or view a specific todo by its ID.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+By default, todos are sorted by most recently updated. Use -n to limit results,
+-t to filter by due date, or pass a todo ID to view its details.
+
+Examples:
+  yak list
+  yak list 3
+  yak list -n 5
+  yak list -t 25-03`,
 	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
@@ -80,7 +84,7 @@ to quickly create a Cobra application.`,
 	},
 }
 
-func getTodoById (todos []model.Todo, id int) []model.Todo {
+func getTodoById(todos []model.Todo, id int) []model.Todo {
 	for _, todo := range todos {
 		if todo.ID == id {
 			return []model.Todo{todo}

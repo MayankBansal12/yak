@@ -18,14 +18,15 @@ var isConfirm bool
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Use:   "delete [todo-id]",
+	Short: "Delete a todo item",
+	Long: `Delete a todo item by its ID.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Prompts for confirmation before deleting. Use -y or --confirm to skip it.
+
+Examples:
+  yak delete 3
+  yak delete #3 -y`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		idArgs := strings.TrimSpace(strings.TrimLeft(args[0], "#"))

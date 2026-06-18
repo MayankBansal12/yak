@@ -14,15 +14,14 @@ import (
 
 // markCmd represents the mark command
 var markCmd = &cobra.Command{
-	Use:   "mark",
+	Use:     "mark [todo-id]",
 	Aliases: []string{"done", "donee", "doneee"},
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short:   "Mark a todo as completed",
+	Long: `Mark a todo item as completed by its ID.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Examples:
+  yak mark 3
+  yak done 3`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
