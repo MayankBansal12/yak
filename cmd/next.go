@@ -1,6 +1,5 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -13,13 +12,11 @@ import (
 // nextCmd represents the next command
 var nextCmd = &cobra.Command{
 	Use:   "next",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Show the next todo item",
+	Long: `Show the next upcoming todo item from your list.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Examples:
+  yak next`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("next called")
 	},
@@ -27,14 +24,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	rootCmd.AddCommand(nextCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// nextCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// nextCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -1,5 +1,5 @@
 # yak — a CLI Todo Manager
-> Stop yak shaving. Just yak it.
+> following todos are hard but managing them shouldn't be
 
 ---
 
@@ -9,11 +9,10 @@
 | Command | Description |
 |---|---|
 | `yak add "<title>"` | Add a new todo with just a title |
-| `yak add "<title>" -p <priority>` | Add a todo with priority (high / medium / low) |
+| `yak add "<title>" -p <priority>` | Add a todo with priority (0-2, 0 is highest) |
 | `yak add "<title>" -d "<details>"` | Add a todo with a description |
 | `yak add "<title>" -t <DD/MM>` | Add a todo with a deadline (current year assumed) |
 | `yak add "<title>" -t <DD/MM/YY>` | Add a todo with a full deadline |
-| `yak add "<title>" -pdt <priority> "<details>" <DD/MM>` | Add a todo with priority, details and deadline in one shot |
 | `yak add -i` | Add a todo interactively (guided prompts) |
 
 ---
@@ -31,7 +30,7 @@
 | `yak today -n <n>` | List n todos for today sorted by priority — shows empty message if none |
 | `yak next` | Show 3 todos sorted by nearest deadline then priority — pulls from any date if today is clear |
 
-- note: `view` is an alias for list (eg: yak view - list all pending todos)
+- note: `view`, `see`, `get`, `find` are aliases for list (eg: yak view - list all pending todos)
 ---
 
 ### Update
@@ -41,7 +40,6 @@
 | `yak update #<ref> -p <priority>` | Update the priority of a todo |
 | `yak update #<ref> -d "<details>"` | Update the description of a todo |
 | `yak update #<ref> -t <DD/MM>` | Update the deadline of a todo |
-| `yak update #<ref> -i` | Update a todo interactively (guided prompts) |
 
 ---
 
@@ -69,13 +67,14 @@
 
 | Field | Type | Notes |
 |---|---|---|
-| `ref` | number | Auto-incremented, stable (never re-numbered after delete) |
+| `id` | number | Auto-incremented, stable (never re-numbered after delete) |
 | `title` | string | Required |
-| `details` | string | Optional description |
-| `priority` | string | `high` / `medium` / `low` — defaults to `medium` |
-| `deadline` | date | Optional, format DD/MM or DD/MM/YY |
-| `status` | string | `pending` / `done` |
+| `desc` | string | Optional description |
+| `priority` | number | `0` / `1` / `2` — optional (0 is highest) |
+| `due_date` | string | Optional, format DD/MM or DD/MM/YY |
 | `created_at` | datetime | Auto-set on creation |
+| `updated_at` | datetime | Auto-set on creation and updates |
+| `completed_at` | datetime | Set when marked as done (empty = pending) |
 
 ---
 
@@ -85,12 +84,13 @@
 |---|---|---|
 | `yak today` | Priority | — |
 | `yak next` | Nearest deadline | Priority |
-| `yak list` | Created at (newest first) | — |
+| `yak list` | Updated at (newest first) | — |
 
 ---
 
 ## Storage
-- Single JSON file at `~/.yak/todos.json`
+- Single JSON file at `~/.local/share/yak/todos.json`
+- Respects `$YAK_DATA_DIR` and `$XDG_DATA_HOME` environment variables
 - Human-readable, easily backed up or grepped
 
 ---
