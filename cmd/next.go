@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"yak-cli/internal/display"
-	"yak-cli/internal/model"
-	"yak-cli/internal/storage"
+	"github.com/mayankbansal12/yak/internal/display"
+	"github.com/mayankbansal12/yak/internal/model"
+	"github.com/mayankbansal12/yak/internal/storage"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +34,7 @@ Examples:
 		var upcomingTodo []model.Todo
 
 		for _, todo := range storedTodos {
-			if todo.CompletedAt != "" || todo.DueDate != "" {
+			if todo.CompletedAt != "" || todo.DueDate == "" {
 				continue
 			}
 			t, _ := time.Parse(time.RFC3339, todo.DueDate)

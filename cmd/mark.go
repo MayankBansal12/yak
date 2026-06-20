@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"yak-cli/internal/storage"
+	"github.com/mayankbansal12/yak/internal/storage"
 
 	"github.com/spf13/cobra"
 )
