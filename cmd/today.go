@@ -4,7 +4,13 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"cmp"
 	"fmt"
+	"slices"
+	"time"
+	"yak-cli/internal/display"
+	"yak-cli/internal/model"
+	"yak-cli/internal/storage"
 
 	"github.com/spf13/cobra"
 )
@@ -28,14 +34,49 @@ Examples:
   yak today
   yak today -a
   yak today -n 5`,
-	Run: func(cmd *cobra.Command, args []string) {
-		if todayArgs.showAll {
-			fmt.Println("all todos for today are following: ")
-		} else if todayArgs.lastN > 0 {
-			fmt.Printf("listing last %d todos for today\n", todayArgs.lastN)
-		} else {
-			fmt.Println("3 for today are following: ")
+	RunE: func(cmd *cobra.Command, args []string) error {
+		storedTodos, err := storage.GetTodos()
+		if err != nil {
+			return err
 		}
+
+		todayTime := time.Now().Format("02-01-2006")
+		var upcomingTodos []model.Todo
+		for _, todo := range storedTodos {
+			t, _ := time.Parse(time.RFC3339, todo.DueDate)
+			dueDateOnly := t.Format("02-01-2006")
+			if dueDateOnly == todayTime {
+				upcomingTodos = append(upcomingTodos, todo)
+			}
+		}
+
+		slices.SortFunc(upcomingTodos, func(a, b model.Todo) int {
+			if a.Priority == nil && b.Priority == nil {
+				return 0
+			}
+			if a.Priority == nil {
+				return 1
+			}
+			if b.Priority == nil {
+				return -1
+			}
+			return cmp.Compare(*a.Priority, *b.Priority)
+		})
+
+		todosLen := len(upcomingTodos)
+		if todosLen == 0 {
+			fmt.Println("No upcoming todos found for today")
+			return nil
+		}
+
+		listLen := todosLen
+		if todayArgs.lastN > 0 {
+			listLen = min(todayArgs.lastN, todosLen)
+		} else if !todayArgs.showAll {
+			listLen = 3
+		}
+		display.PrintTodos(upcomingTodos[:listLen], true)
+		return nil
 	},
 }
 
