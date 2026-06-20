@@ -1,14 +1,11 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"fmt"
-	"strings"
+	// "strings"
 
-	"yak-cli/internal/model"
-	"yak-cli/utils"
+	// "github.com/mayankbansal12/yak/internal/model"
+	// "github.com/mayankbansal12/yak/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -34,45 +31,47 @@ priority, and due date — can be supplied as flags.
 Examples:
   yak update 3 "New title"
   yak update 3 -p 1 -d "Updated description" -t 25-03`,
-	Args: cobra.RangeArgs(1, 2),
+	// Args: cobra.RangeArgs(1, 2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var item model.Todo
+		// var item model.Todo
 
-		idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
-		if idArg == "" {
-			return fmt.Errorf("ToDo item ID is required for the update command")
-		}
+		// idArg := strings.TrimSpace(strings.TrimLeft(args[0], "#"))
+		// if idArg == "" {
+		// 	return fmt.Errorf("ToDo item ID is required for the update command")
+		// }
 
-		hasTitle := len(args) > 1
-		if !hasTitle && cmd.Flags().NFlag() == 0 {
-			return fmt.Errorf("either a title or at least one flag is required")
-		}
-		if hasTitle && strings.TrimSpace(args[1]) != "" {
-			item.Title = strings.TrimSpace(args[1])
-		}
+		// hasTitle := len(args) > 1
+		// if !hasTitle && cmd.Flags().NFlag() == 0 {
+		// 	return fmt.Errorf("either a title or at least one flag is required")
+		// }
+		// if hasTitle && strings.TrimSpace(args[1]) != "" {
+		// 	item.Title = strings.TrimSpace(args[1])
+		// }
 
-		if updateArgs.desc != "" {
-			item.Desc = updateArgs.desc
-		}
+		// if updateArgs.desc != "" {
+		// 	item.Desc = updateArgs.desc
+		// }
 
-		if updateArgs.priority != -1 {
-			if updateArgs.priority < 0 || updateArgs.priority > 2 {
-				return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", updateArgs.priority)
-			}
-			item.Priority = &updateArgs.priority
-		}
+		// if updateArgs.priority != -1 {
+		// 	if updateArgs.priority < 0 || updateArgs.priority > 2 {
+		// 		return fmt.Errorf("invalid priority %d: must be 0, 1, or 2", updateArgs.priority)
+		// 	}
+		// 	item.Priority = &updateArgs.priority
+		// }
 
-		if updateArgs.dueDate != "" {
-			itemDue, err := utils.FormatParsedDate(updateArgs.dueDate)
-			if err != nil {
-				return fmt.Errorf("%w", err)
-			}
-			updateArgs.dueDate = itemDue
-			item.DueDate = updateArgs.dueDate
-		}
+		// if updateArgs.dueDate != "" {
+		// 	itemDue, err := utils.FormatParsedDate(updateArgs.dueDate)
+		// 	if err != nil {
+		// 		return fmt.Errorf("%w", err)
+		// 	}
+		// 	updateArgs.dueDate = itemDue
+		// 	item.DueDate = updateArgs.dueDate
+		// }
 
 		// todo: update todo in local file
-		fmt.Printf("Updated the todo item %s : %v\n", idArg, updateArgs)
+		// fmt.Printf("Updated the todo item %s : %v\n", idArg, updateArgs)
+		//
+		fmt.Println("Update Command isn't available yet! Trying to ship fast, please wait!")
 		return nil
 	},
 }

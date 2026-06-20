@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"yak-cli/internal/model"
+	"github.com/mayankbansal12/yak/internal/model"
 )
 
 const filename = "todos.json"

@@ -1,6 +1,3 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -9,7 +6,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"yak-cli/internal/storage"
+
+	"github.com/mayankbansal12/yak/internal/storage"
 
 	"github.com/spf13/cobra"
 )

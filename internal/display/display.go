@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"yak-cli/internal/model"
+	"github.com/mayankbansal12/yak/internal/model"
 )
 
 func PrintTodos(todos []model.Todo, detailed bool) {

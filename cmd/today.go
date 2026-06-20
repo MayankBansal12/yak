@@ -1,6 +1,3 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -8,9 +5,10 @@ import (
 	"fmt"
 	"slices"
 	"time"
-	"yak-cli/internal/display"
-	"yak-cli/internal/model"
-	"yak-cli/internal/storage"
+
+	"github.com/mayankbansal12/yak/internal/display"
+	"github.com/mayankbansal12/yak/internal/model"
+	"github.com/mayankbansal12/yak/internal/storage"
 
 	"github.com/spf13/cobra"
 )

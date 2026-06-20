@@ -1,6 +1,3 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -9,9 +6,10 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"yak-cli/internal/display"
-	"yak-cli/internal/model"
-	"yak-cli/internal/storage"
+
+	"github.com/mayankbansal12/yak/internal/display"
+	"github.com/mayankbansal12/yak/internal/model"
+	"github.com/mayankbansal12/yak/internal/storage"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +32,7 @@ Examples:
 		var upcomingTodo []model.Todo
 
 		for _, todo := range storedTodos {
-			if todo.CompletedAt != "" || todo.DueDate != "" {
+			if todo.CompletedAt != "" || todo.DueDate == "" {
 				continue
 			}
 			t, _ := time.Parse(time.RFC3339, todo.DueDate)
@@ -51,13 +49,13 @@ Examples:
 				return dateCmp
 			}
 			if a.Priority == nil && b.Priority == nil {
-			    return 0
+				return 0
 			}
 			if a.Priority == nil {
-			    return 1
+				return 1
 			}
 			if b.Priority == nil {
-			    return -1
+				return -1
 			}
 			return cmp.Compare(*a.Priority, *b.Priority)
 		})
