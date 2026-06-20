@@ -7,9 +7,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "yak",
+	Use:     "yak",
 	Version: "0.1.0",
-	Short: "A fast and minimal CLI to manage todos",
+	Short:   "A fast and minimal CLI to manage todos",
 	Long: `yak is a lightweight CLI todo manager that makes managing your daily tasks simple and fast.
 Run the help command for instructions or go through README.md to know more about CLI.
 

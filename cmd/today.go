@@ -3,11 +3,11 @@ package cmd
 import (
 	"cmp"
 	"fmt"
-	"slices"
-	"time"
 	"github.com/mayankbansal12/yak/internal/display"
 	"github.com/mayankbansal12/yak/internal/model"
 	"github.com/mayankbansal12/yak/internal/storage"
+	"slices"
+	"time"
 
 	"github.com/spf13/cobra"
 )

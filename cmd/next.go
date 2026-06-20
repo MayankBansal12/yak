@@ -3,12 +3,12 @@ package cmd
 import (
 	"cmp"
 	"fmt"
-	"slices"
-	"strings"
-	"time"
 	"github.com/mayankbansal12/yak/internal/display"
 	"github.com/mayankbansal12/yak/internal/model"
 	"github.com/mayankbansal12/yak/internal/storage"
+	"slices"
+	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -48,13 +48,13 @@ Examples:
 				return dateCmp
 			}
 			if a.Priority == nil && b.Priority == nil {
-			    return 0
+				return 0
 			}
 			if a.Priority == nil {
-			    return 1
+				return 1
 			}
 			if b.Priority == nil {
-			    return -1
+				return -1
 			}
 			return cmp.Compare(*a.Priority, *b.Priority)
 		})
