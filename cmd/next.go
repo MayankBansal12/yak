@@ -27,16 +27,19 @@ Examples:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
 		if err != nil {
-			return fmt.Errorf("%w", err)
+			return err
 		}
-		todayTime := time.Now().Format(time.RFC3339)
+
+		todayTime := time.Now().Format("02-01-2006")
 		var upcomingTodo []model.Todo
 
 		for _, todo := range storedTodos {
-			if todo.CompletedAt != "" {
+			if todo.CompletedAt != "" || todo.DueDate != "" {
 				continue
 			}
-			if todo.DueDate != "" && todo.DueDate < todayTime {
+			t, _ := time.Parse(time.RFC3339, todo.DueDate)
+			dueDateOnly := t.Format("02-01-2006")
+			if dueDateOnly < todayTime {
 				continue
 			}
 			upcomingTodo = append(upcomingTodo, todo)

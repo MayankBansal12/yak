@@ -44,7 +44,7 @@ Examples:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
 		if err != nil {
-			return fmt.Errorf("%w", err)
+			return err
 		}
 
 		if len(args) > 0 {
@@ -67,7 +67,7 @@ Examples:
 		} else if commandArgs.due != "" {
 			dueDate, err := utils.FormatParsedDate(commandArgs.due)
 			if err != nil {
-				return fmt.Errorf("%w", err)
+				return err
 			}
 
 			dueTodos := []model.Todo{}
