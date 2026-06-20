@@ -63,11 +63,12 @@ func printCard(t model.Todo, width int, detailed bool) {
 }
 
 func printRow(content string, width int) {
-	if len(content) > width {
-		content = content[:width-3] + "..."
+	inner := width - 2
+	if len(content) > inner {
+		content = content[:inner-3] + "..."
 	}
-	padding := width - len(content)
-	fmt.Printf("│ %s%s │\n", content, strings.Repeat(" ", padding-1))
+	padding := inner - len(content)
+	fmt.Printf("│ %s%s │\n", content, strings.Repeat(" ", padding))
 }
 
 func formatDate(raw string) string {
