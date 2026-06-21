@@ -48,6 +48,14 @@ sudo mv yak /usr/local/bin/
 | `yak add "<title>" -t <DD-MM-YY>` | Add a todo with a full deadline |
 | `yak add -i` | Add a todo interactively (guided prompts) |
 
+**Examples:**
+```bash
+yak add "Buy groceries"
+yak add "Pay rent" -p 0 -d "Include electricity bill" -t 25-06
+yak add "Read book" -t 30-06-25
+yak add -i
+```
+
 ---
 
 ### View & List
@@ -57,42 +65,77 @@ sudo mv yak /usr/local/bin/
 | `yak list -n <n>` | List last n todos including completed ones |
 | `yak list -t <DD-MM>` | List all todos assigned to a specific date |
 | `yak list -d` | List todos in detailed format (title, description, priority, deadline, created at) |
-| `yak list #<ref>` | Show full details for a specific todo by ref number |
+| `yak list <ref>` | Show full details for a specific todo by ref number |
 | `yak today` | List 3 todos for today sorted by priority — shows empty message if none |
 | `yak today -a` | List all todos for today sorted by priority — shows empty message if none |
 | `yak today -n <n>` | List n todos for today sorted by priority — shows empty message if none |
 | `yak next` | Show 3 todos sorted by nearest deadline then priority — pulls from any date if today is clear |
 
 - note: `view`, `see`, `get`, `find` are aliases for list (eg: yak view - list all pending todos)
+
+**Examples:**
+```bash
+yak list
+yak list -n 5
+yak list -t 22-06
+yak list -d
+yak list 3
+yak today
+yak today -a
+yak today -n 5
+yak next
+```
+
 ---
 
-### Update (Coming Soon)
+### Update
 | Command | Description |
 |---|---|
-| `yak update #<ref> "<title>"` | Update the title of a todo |
-| `yak update #<ref> -p <priority>` | Update the priority of a todo |
-| `yak update #<ref> -d "<details>"` | Update the description of a todo |
-| `yak update #<ref> -t <DD-MM>` | Update the deadline of a todo |
+| `yak update <ref> "<title>"` | Update the title of a todo |
+| `yak update <ref> -p <priority>` | Update the priority of a todo |
+| `yak update <ref> -d "<details>"` | Update the description of a todo |
+| `yak update <ref> -t <DD-MM>` | Update the deadline of a todo |
+
+**Examples:**
+```bash
+yak update 3 "Buy organic milk"
+yak update 3 -p 1
+yak update 3 -d "From the local farm" -t 28-06
+```
 
 ---
 
 ### Mark / Done
 | Command | Description |
 |---|---|
-| `yak mark #<ref>` | Mark a todo as completed |
-| `yak done #<ref>` | Alias for `yak mark` — same behaviour |
+| `yak mark <ref>` | Mark a todo as completed |
+| `yak done <ref>` | Alias for `yak mark` — same behaviour |
 
 > Errors: shows a message if the ref doesn't exist or is already marked.
+
+**Examples:**
+```bash
+yak mark 3
+yak done 3
+yak mark #5
+```
 
 ---
 
 ### Delete
 | Command | Description |
 |---|---|
-| `yak delete #<ref>` | Delete a todo (prompts for confirmation) |
-| `yak delete #<ref> -y` | Delete a todo and skip confirmation prompt |
+| `yak delete <ref>` | Delete a todo (prompts for confirmation) |
+| `yak delete <ref> -y` | Delete a todo and skip confirmation prompt |
 
 > Errors: shows a message if the ref doesn't exist.
+
+**Examples:**
+```bash
+yak delete 3
+yak delete 3 -y
+yak delete #5 -y
+```
 
 ---
 
