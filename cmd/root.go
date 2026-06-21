@@ -1,10 +1,24 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var banner = `
+                     ░░███
+ █████ ████  ██████   ░███ █████
+░░███ ░███  ░░░░░███  ░███░░███
+ ░███ ░███   ███████  ░██████░
+ ░███ ░███  ███░░███  ░███░░███
+ ░░███████ ░░████████ ████ █████
+  ░░░░░███  ░░░░░░░░ ░░░░ ░░░░░
+  ███ ░███
+ ░░██████
+  ░░░░░░
+`
 
 var rootCmd = &cobra.Command{
 	Use:     "yak",
@@ -15,11 +29,15 @@ Run the help command for instructions or go through README.md to know more about
 
 Quick start:
   yak add "Buy groceries"           Add a todo
-  yak add "Pay rent" -p 0 -t 25-06  Add with high priority & deadline 25 June 2026
+  yak add "Pay rent" -p 0 -t 25-06  Add with high priority & deadline
   yak list                          List all pending todos
-  yak today                         Show today's top 3 todos
   yak next                          Show upcoming todos by deadline
   yak mark 1                       Mark todo #1 as done`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(banner)
+		fmt.Println()
+		cmd.Help()
+	},
 }
 
 func Execute() {

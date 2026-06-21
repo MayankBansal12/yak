@@ -139,6 +139,34 @@ func MarkTodo(id int) error {
 	return fmt.Errorf("Todo with id: %v not found\n", id)
 }
 
+func UpdateTodo(id int, updatedItem model.Todo) error {
+	todos, err := GetTodos()
+	if err != nil {
+		return err
+	}
+
+	for idx, todo := range todos {
+		if todo.ID == id {
+			if updatedItem.Title != "" {
+				todos[idx].Title = updatedItem.Title
+			}
+			if updatedItem.Desc != "" {
+				todos[idx].Desc = updatedItem.Desc
+			}
+			if updatedItem.Priority != nil {
+				todos[idx].Priority = updatedItem.Priority
+			}
+			if updatedItem.DueDate != "" {
+				todos[idx].DueDate = updatedItem.DueDate
+			}
+			todos[idx].UpdatedAt = time.Now().UTC().Format(time.RFC3339)
+			return SaveTodoToLocalStorage(todos)
+		}
+	}
+
+	return fmt.Errorf("Todo with id: %v not found\n", id)
+}
+
 func DeleteTodo(id int) error {
 	todos, err := GetTodos()
 	if err != nil {
