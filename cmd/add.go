@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/mayankbansal12/yak/internal/display"
 	"github.com/mayankbansal12/yak/internal/model"
 	"github.com/mayankbansal12/yak/internal/storage"
 	"github.com/mayankbansal12/yak/utils"
@@ -17,6 +19,7 @@ type addFlags struct {
 	priority    int
 	dueDate     string
 	interactive bool
+	jsonOutput  bool
 }
 
 var cmdFlags addFlags
@@ -31,12 +34,14 @@ var addCmd = &cobra.Command{
 The title can be passed as the first argument, or entered when prompted.
 Optional fields — description, priority, and due date — can be supplied
 as flags.
-Add todo interactively with -i or --interactive
+Add todo interactively with -i or --interactive. Use -j to output the created
+todo as JSON.
 
 Examples:
   yak add "Buy milk"
   yak add "Pay rent" -p 1 -d "Include utilities" -t 25-03
-  yak add -i (interactive mode)`,
+  yak add -i (interactive mode)
+  yak add "Buy milk" -j`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var item model.Todo
 
@@ -48,7 +53,7 @@ Examples:
 
 		item.Title = title
 
-		if title == "" || cmdFlags.interactive {
+		if cmdFlags.interactive {
 			err := interactionModeForAdd(cmd, &item)
 			if err != nil {
 				return err
@@ -57,6 +62,11 @@ Examples:
 			if err != nil {
 				return err
 			}
+			return outputAddedTodoJSON()
+		}
+
+		if title == "" {
+			fmt.Println("did you forget -i flag?\n\nEither provide a title or run in interactive mode with -i flag")
 			return nil
 		}
 
@@ -82,8 +92,26 @@ Examples:
 		if err != nil {
 			return err
 		}
-		return nil
+		return outputAddedTodoJSON()
 	},
+}
+
+func outputAddedTodoJSON() error {
+	if !cmdFlags.jsonOutput {
+		return nil
+	}
+	all, err := storage.GetTodos()
+	if err != nil {
+		return err
+	}
+	var created model.Todo
+	for _, todo := range all {
+		if todo.ID > created.ID {
+			created = todo
+		}
+	}
+	display.PrintTodoJSON(created, time.Now())
+	return nil
 }
 
 func interactionModeForAdd(cmd *cobra.Command, item *model.Todo) error {
@@ -206,4 +234,5 @@ func init() {
 	addCmd.Flags().StringVarP(&cmdFlags.desc, "detail", "d", "", "description/details for the todo item")
 	addCmd.Flags().IntVarP(&cmdFlags.priority, "priority", "p", -1, "priority for the todo item")
 	addCmd.Flags().StringVarP(&cmdFlags.dueDate, "due", "t", "", "due date for the todo item")
+	addCmd.Flags().BoolVarP(&cmdFlags.jsonOutput, "json", "j", false, "Output the created todo as JSON")
 }

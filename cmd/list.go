@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mayankbansal12/yak/internal/display"
 	"github.com/mayankbansal12/yak/internal/model"
@@ -18,6 +19,8 @@ type listArgs struct {
 	lastN      int
 	due        string
 	showDetail bool
+	compact    bool
+	jsonOutput bool
 }
 
 var commandArgs listArgs
@@ -30,13 +33,16 @@ var listCmd = &cobra.Command{
 	Long: `List all todo items, or view a specific todo by its ID.
 
 By default, todos are sorted by most recently updated. Use -n to limit results,
--t to filter by due date, or pass a todo ID to view its details.
+-t to filter by due date, -c for a compact one-line view, or -j to output JSON.
+Pass a todo ID to view its details.
 
 Examples:
   yak list
   yak list 3
   yak list -n 5
-  yak list -t 25-03`,
+  yak list -t 25-03
+  yak list -c
+  yak list -j`,
 	Args: cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
@@ -76,7 +82,13 @@ Examples:
 			storedTodos = dueTodos
 		}
 
-		display.PrintTodos(storedTodos, commandArgs.showDetail)
+		opts := display.Options{
+			Compact:  commandArgs.compact,
+			JSON:     commandArgs.jsonOutput,
+			Detailed: commandArgs.showDetail,
+			Now:      time.Now(),
+		}
+		display.PrintTodosWithOptions(storedTodos, opts)
 		return nil
 	},
 }
@@ -96,4 +108,6 @@ func init() {
 	listCmd.Flags().IntVarP(&commandArgs.lastN, "last-N", "n", -1, "List last n todos including completed ones")
 	listCmd.Flags().StringVarP(&commandArgs.due, "datetime", "t", "", "List all todos assigned to a specific date")
 	listCmd.Flags().BoolVarP(&commandArgs.showDetail, "detail", "d", false, "List todos in detailed format (title, description, priority, deadline, created at)")
+	listCmd.Flags().BoolVarP(&commandArgs.compact, "compact", "c", false, "List todos in compact one-line format")
+	listCmd.Flags().BoolVarP(&commandArgs.jsonOutput, "json", "j", false, "Output todos as JSON")
 }

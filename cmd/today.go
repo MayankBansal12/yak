@@ -14,8 +14,10 @@ import (
 )
 
 type todayArguments struct {
-	lastN   int
-	showAll bool
+	lastN      int
+	showAll    bool
+	compact    bool
+	jsonOutput bool
 }
 
 var todayArgs todayArguments
@@ -26,12 +28,15 @@ var todayCmd = &cobra.Command{
 	Short: "List today's todos",
 	Long: `List all todo items due today.
 
-Use -a or --all to show all todos for today, or -n to limit results.
+Use -a or --all to show all todos for today, -n to limit results, -c for a
+compact view, or -j to output JSON.
 
 Examples:
   yak today
   yak today -a
-  yak today -n 5`,
+  yak today -n 5
+  yak today -c
+  yak today -j`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
 		if err != nil {
@@ -61,9 +66,20 @@ Examples:
 			return cmp.Compare(*a.Priority, *b.Priority)
 		})
 
+		opts := display.Options{
+			Compact:  todayArgs.compact,
+			JSON:     todayArgs.jsonOutput,
+			Detailed: true,
+			Now:      time.Now(),
+		}
+
 		todosLen := len(upcomingTodos)
 		if todosLen == 0 {
-			fmt.Println("No upcoming todos found for today")
+			if todayArgs.jsonOutput {
+				display.PrintTodosWithOptions(upcomingTodos, opts)
+			} else {
+				fmt.Println("No upcoming todos found for today")
+			}
 			return nil
 		}
 
@@ -73,7 +89,7 @@ Examples:
 		} else if !todayArgs.showAll {
 			listLen = 3
 		}
-		display.PrintTodos(upcomingTodos[:listLen], true)
+		display.PrintTodosWithOptions(upcomingTodos[:listLen], opts)
 		return nil
 	},
 }
@@ -82,4 +98,6 @@ func init() {
 	rootCmd.AddCommand(todayCmd)
 	todayCmd.Flags().IntVarP(&todayArgs.lastN, "last-N", "n", -1, "List last n todos for today")
 	todayCmd.Flags().BoolVarP(&todayArgs.showAll, "all", "a", false, "List all todos for today")
+	todayCmd.Flags().BoolVarP(&todayArgs.compact, "compact", "c", false, "List todos in compact one-line format")
+	todayCmd.Flags().BoolVarP(&todayArgs.jsonOutput, "json", "j", false, "Output todos as JSON")
 }
