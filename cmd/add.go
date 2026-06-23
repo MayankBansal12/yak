@@ -62,7 +62,9 @@ Examples:
 			if err != nil {
 				return err
 			}
-			return outputAddedTodoJSON()
+
+			display.PrintTodoJSON(item, time.Now())
+			return nil
 		}
 
 		if title == "" {
@@ -92,26 +94,10 @@ Examples:
 		if err != nil {
 			return err
 		}
-		return outputAddedTodoJSON()
-	},
-}
 
-func outputAddedTodoJSON() error {
-	if !cmdFlags.jsonOutput {
+		display.PrintTodoJSON(item, time.Now())
 		return nil
-	}
-	all, err := storage.GetTodos()
-	if err != nil {
-		return err
-	}
-	var created model.Todo
-	for _, todo := range all {
-		if todo.ID > created.ID {
-			created = todo
-		}
-	}
-	display.PrintTodoJSON(created, time.Now())
-	return nil
+	},
 }
 
 func interactionModeForAdd(cmd *cobra.Command, item *model.Todo) error {
