@@ -1,11 +1,11 @@
 ```
-                      ░░███
- █████  ████  ██████    ░███   █████
-░░███  ░███  ░░░░░███   ░███░░░░███
+                       ░░██
+ █████  ████  ██████    ░███  █████
+░░███  ░███  ░░░░░███   ░███░░░███
  ░███  ░███   ███████   ░███████░
- ░███  ░███  ███░░███   ░███░   ███
- ░░███████  ░████████  ░███░   █████
-  ░░░░░███  ░░░░░░░░   ░░░ ░░░░░
+ ░███  ░███  ███░░███   ░███░  ███
+ ░░███████  ░████████  ░███░  █████
+  ░░░░░███  ░░░░░░░░   ░░░   ░░░░░
   ███ ░███
   ░██████
    ░░░░░                   
@@ -59,6 +59,7 @@ sudo mv yak /usr/local/bin/
 | `yak add "<title>" -d "<details>"` | Add a todo with a description |
 | `yak add "<title>" -t <DD-MM>` | Add a todo with a deadline (current year assumed) |
 | `yak add "<title>" -t <DD-MM-YY>` | Add a todo with a full deadline |
+| `yak add "<title>" -j` | Add a todo and output it as JSON |
 | `yak add -i` | Add a todo interactively (guided prompts) |
 
 **Examples:**
@@ -66,6 +67,7 @@ sudo mv yak /usr/local/bin/
 yak add "Buy groceries"
 yak add "Pay rent" -p 0 -d "Include electricity bill" -t 25-06
 yak add "Read book" -t 30-06-25
+yak add "Buy milk" -p 1
 yak add -i
 ```
 
@@ -79,10 +81,16 @@ yak add -i
 | `yak list -t <DD-MM>` | List all todos assigned to a specific date |
 | `yak list -d` | List todos in detailed format (title, description, priority, deadline, created at) |
 | `yak list <ref>` | Show full details for a specific todo by ref number |
+| `yak list -c` | List todos in compact one-line format |
+| `yak list -j` | Output todos as JSON |
 | `yak today` | List 3 todos for today sorted by priority — shows empty message if none |
 | `yak today -a` | List all todos for today sorted by priority — shows empty message if none |
 | `yak today -n <n>` | List n todos for today sorted by priority — shows empty message if none |
+| `yak today -c` | List today's todos in compact format |
+| `yak today -j` | Output today's todos as JSON |
 | `yak next` | Show 3 todos sorted by nearest deadline then priority — pulls from any date if today is clear |
+| `yak next -c` | Show next todos in compact format |
+| `yak next -j` | Output next todos as JSON |
 
 - note: `view`, `see`, `get`, `find` are aliases for list (eg: yak view - list all pending todos)
 
@@ -93,10 +101,16 @@ yak list -n 5
 yak list -t 22-06
 yak list -d
 yak list 3
+yak list -c
+yak list -j
 yak today
 yak today -a
 yak today -n 5
+yak today -c
+yak today -j
 yak next
+yak next -c
+yak next -j
 ```
 
 ---
@@ -174,6 +188,62 @@ yak delete #5 -y
 | `yak today` | Priority | — |
 | `yak next` | Nearest deadline | Priority |
 | `yak list` | Updated at (newest first) | — |
+| `yak list -c` | Due date (nearest first) | Priority |
+
+---
+
+## Output Formats
+
+### Cards (default)
+`yak list`, `yak today`, and `yak next` render each todo as a card. Cards show the todo's status icon, title, relative due date, priority, and status.
+
+### Compact (`-c`)
+`yak list -c`, `yak today -c`, and `yak next -c` render one todo per line, sorted by due date then priority. This is useful when you have many todos or a narrow terminal.
+
+### JSON (`-j`)
+`yak list -j`, `yak today -j`, `yak next -j`, and `yak add ... -j` output JSON for scripting and agent integration. The list commands emit an envelope:
+
+```json
+{
+  "todos": [...],
+  "count": 3,
+  "generated_at": "2026-06-23T10:00:00Z"
+}
+```
+
+`yak add -j` emits the created todo:
+
+```json
+{
+  "todo": {...},
+  "id": 5
+}
+```
+
+### Status icons
+| Icon | Meaning |
+|---|---|
+| `●` | Completed |
+| `○` | Pending |
+| `!` | Overdue (active todos only) |
+
+### Priority bars
+Priority is shown as ascending vertical bars (`▁` is the shortest, `█` is the tallest):
+
+| Bars | Priority |
+|---|---|
+| `▁▄█` | High |
+| `▁▄` | Medium |
+| `▁` | Low |
+
+Cards render the bars followed by the word (`▁▄█ High`); compact mode shows the bars only.
+
+### Relative due dates
+Due dates are shown relative to today when within ±7 days:
+
+- `today`, `tomorrow`, `yesterday`
+- `in N days` / `N days overdue`
+- Absolute dates (`Jan 02`) for dates beyond a week, or (`Jan 02, 2027`) for a different year.
 
 ---
 

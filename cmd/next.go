@@ -14,14 +14,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	nextCompact bool
+	nextJSON    bool
+)
+
 // nextCmd represents the next command
 var nextCmd = &cobra.Command{
 	Use:   "next",
 	Short: "Show the next todo item",
 	Long: `Show the next upcoming todo item from your list.
 
+Use -c for a compact view or -j to output JSON.
+
 Examples:
-  yak next`,
+  yak next
+  yak next -c
+  yak next -j`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		storedTodos, err := storage.GetTodos()
 		if err != nil {
@@ -60,18 +69,31 @@ Examples:
 			return cmp.Compare(*a.Priority, *b.Priority)
 		})
 
+		opts := display.Options{
+			Compact:  nextCompact,
+			JSON:     nextJSON,
+			Detailed: true,
+			Now:      time.Now(),
+		}
+
 		todosLen := len(upcomingTodo)
 		if todosLen == 0 {
-			fmt.Println("No next todos found")
+			if nextJSON {
+				display.PrintTodosWithOptions(upcomingTodo, opts)
+			} else {
+				fmt.Println("No next todos found")
+			}
 			return nil
 		}
 
 		listLen := min(todosLen, 3)
-		display.PrintTodos(upcomingTodo[:listLen], true)
+		display.PrintTodosWithOptions(upcomingTodo[:listLen], opts)
 		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(nextCmd)
+	nextCmd.Flags().BoolVarP(&nextCompact, "compact", "c", false, "List todos in compact one-line format")
+	nextCmd.Flags().BoolVarP(&nextJSON, "json", "j", false, "Output todos as JSON")
 }
